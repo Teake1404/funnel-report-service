@@ -1,6 +1,6 @@
 """
 Standalone Funnel Report Service
-Uses EXACT same HTML/CSS/JavaScript from previously deployed demo.html
+Exact same structure as working main_api.py /funnel-report endpoint
 """
 
 from flask import Flask, jsonify
@@ -21,19 +21,25 @@ logger = logging.getLogger(__name__)
 
 @app.route('/', methods=['GET'])
 def index():
-    """Serve exact same report as previously deployed version using demo.html template"""
+    """Serve funnel report - exact same as working main_api.py /funnel-report endpoint"""
     try:
         default_dimensions = [
-            "sessionDefaultChannelGroup", "deviceCategory", "browser",
-            "screenResolution", "itemName", "itemCategory"
+            "sessionDefaultChannelGroup",
+            "deviceCategory",
+            "browser",
+            "screenResolution",
+            "itemName",
+            "itemCategory"
         ]
 
+        # Use mock data (same as working deployment)
         funnel_data = mock_ga4_data.generate_mock_funnel_data(
             funnel_steps=["view_item", "add_to_cart", "purchase"],
             dimensions=default_dimensions,
             date_range="last_30_days",
-            property_id="123456789"
+            property_id=str(config.GA4_PROPERTY_ID or "123456789")
         )
+        data_provider = "mock"
 
         funnel_metrics = funnel_analysis.calculate_funnel_metrics(funnel_data)
         baseline_rates = funnel_data.get(
@@ -41,16 +47,20 @@ def index():
             funnel_analysis.calculate_baseline_from_data(funnel_data)
         )
         outliers = funnel_analysis.detect_funnel_outliers(
-            funnel_metrics, baseline_rates, threshold=config.OUTLIER_THRESHOLD
+            funnel_metrics,
+            baseline_rates,
+            threshold=config.OUTLIER_THRESHOLD
         )
+
+        top_opps = funnel_analysis.get_top_opportunities(outliers, limit=5)
+        crit_issues = funnel_analysis.get_critical_issues(outliers, limit=5)
 
         # Generate streamlined insights
         insights = ai_insights_streamlined.generate_streamlined_insights(
             outliers, baseline_rates, funnel_metrics
         )
 
-        # Prepare data in exact format expected by demo.html
-        # Convert all data to JSON-serializable format
+        # Build report data for demo.html template
         def make_json_serializable(obj):
             if isinstance(obj, dict):
                 return {k: make_json_serializable(v) for k, v in obj.items()}
@@ -71,7 +81,7 @@ def index():
             "insights": make_json_serializable(insights)
         }
 
-        # Read the exact demo.html template (in same directory)
+        # Read demo_template.html
         template_path = os.path.join(os.path.dirname(__file__), 'demo_template.html')
         try:
             with open(template_path, 'r', encoding='utf-8') as f:
@@ -80,15 +90,12 @@ def index():
             logger.error(f"Template file not found: {template_path}")
             return jsonify({"error": "Template file not found"}), 500
         
-        # Inject data and auto-run
-        # Replace the button click with auto-execution
-        data_json = json.dumps(report_data, default=str).replace('</script>', '<\\/script>')  # Escape script tags
+        # Inject data and auto-run (same pattern as before)
+        data_json = json.dumps(report_data, default=str).replace('</script>', '<\\/script>')
         
-        # Hide the demo button and auto-run the analysis
         html_template = html_template.replace(
             '<div class="demo-section">',
             f'''<script>
-                // Auto-run with data
                 var reportData = {data_json};
                 window.addEventListener('DOMContentLoaded', function() {{
                     displayResults(reportData);
@@ -102,22 +109,15 @@ def index():
         
     except Exception as e:
         logger.error(f"Error rendering funnel report page: {e}", exc_info=True)
-        return jsonify({"error": str(e), "message": "Error generating funnel report"}), 500
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/api/health', methods=['GET'])
 def health():
     """Health check endpoint"""
-    return jsonify({"status": "healthy", "service": "Funnel Report Service", "data_source": "mock"}), 200
-
-@app.route('/health', methods=['GET'])
-def health_simple():
-    """Simple health check"""
-    return "OK", 200
+    return jsonify({"status": "healthy", "service": "Funnel Report Service", "data_source": "mock"})
 
 
-# This ensures the app is ready when imported by gunicorn
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
-    logger.info(f"Starting Flask development server on port {port}")
     app.run(host='0.0.0.0', port=port, debug=False)
