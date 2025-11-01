@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.git
+.gitignore
+*.md
+DEPLOY_INSTRUCTIONS.md
+RAILWAY_DEPLOYMENT.md
+
