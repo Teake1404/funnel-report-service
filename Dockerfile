@@ -19,5 +19,5 @@ ENV PYTHONUNBUFFERED=1
 # Expose port (Railway will set PORT dynamically)
 EXPOSE 8080
 
-# Use gunicorn directly - Railway sets PORT automatically
-CMD gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 600 app:app
+# Use shell form to ensure PORT variable expansion
+CMD gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 1 --timeout 600 app:app
