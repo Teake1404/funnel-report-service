@@ -107,9 +107,12 @@ def index():
 
 @app.route('/api/health', methods=['GET'])
 def health():
+    """Health check endpoint"""
     return jsonify({"status": "healthy", "service": "Funnel Report Service", "data_source": "mock"})
 
 
+# This ensures the app is ready when imported by gunicorn
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
+    logger.info(f"Starting Flask development server on port {port}")
     app.run(host='0.0.0.0', port=port, debug=False)

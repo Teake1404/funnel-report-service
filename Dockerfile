@@ -13,14 +13,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Make startup script executable
-RUN chmod +x start.sh
-
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
 # Expose port (Railway will set PORT dynamically)
 EXPOSE 8080
 
-# Use startup script to handle PORT variable
-CMD ["/bin/bash", "start.sh"]
+# Use gunicorn directly - Railway sets PORT automatically
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 600 app:app
