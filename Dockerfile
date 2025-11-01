@@ -19,6 +19,4 @@ ENV PYTHONUNBUFFERED=1
 # Expose port (Railway sets PORT dynamically)
 EXPOSE 8080
 
-# Railway will use Procfile instead of this CMD
-# But provide a fallback just in case
-CMD gunicorn --bind 0.0.0.0:8080 --workers 1 --timeout 600 app:app
+# Railway will use Procfile - do not specify CMD here
