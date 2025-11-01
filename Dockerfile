@@ -19,5 +19,6 @@ ENV PYTHONUNBUFFERED=1
 # Expose port (Railway sets PORT dynamically)
 EXPOSE 8080
 
-# Use sh -c to properly expand PORT variable
-CMD sh -c 'gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 1 --threads 8 --timeout 600 app:app'
+# Railway will use Procfile instead of this CMD
+# But provide a fallback just in case
+CMD gunicorn --bind 0.0.0.0:8080 --workers 1 --timeout 600 app:app
