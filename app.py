@@ -108,7 +108,12 @@ def index():
 @app.route('/api/health', methods=['GET'])
 def health():
     """Health check endpoint"""
-    return jsonify({"status": "healthy", "service": "Funnel Report Service", "data_source": "mock"})
+    return jsonify({"status": "healthy", "service": "Funnel Report Service", "data_source": "mock"}), 200
+
+@app.route('/health', methods=['GET'])
+def health_simple():
+    """Simple health check"""
+    return "OK", 200
 
 
 # This ensures the app is ready when imported by gunicorn
