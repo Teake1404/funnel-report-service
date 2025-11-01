@@ -13,10 +13,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Make startup script executable
+RUN chmod +x start.sh
+
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
 # Expose port (Railway sets PORT dynamically)
 EXPOSE 8080
 
-# Railway will use Procfile - do not specify CMD here
+# Use startup script which properly handles PORT variable
+CMD ["./start.sh"]
